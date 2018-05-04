@@ -26,7 +26,7 @@ def pull_repository(repository, directory=None):
     if directory.exists():
         subprocess.check_call(['git', 'pull', '--recurse-submodules'], cwd=directory)
     else:
-        subprocess.check_call(['git', 'clone', '--recurse-submodules', '-j8', repository, str(directory)])
+        subprocess.check_call(['git', 'clone', '--recurse-submodules', repository, str(directory)])
 
 
 def pull_dependencies(path):
