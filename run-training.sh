@@ -11,4 +11,4 @@ EOF
     DOCKER=docker
 fi
 
-sudo $DOCKER run --rm -v "$PWD/volume:/volume" tiagoshibata/keras:latest /volume/run $@
+sudo $DOCKER run --rm -t -v "$PWD/volume:/volume" tiagoshibata/keras:latest /volume/run $@
