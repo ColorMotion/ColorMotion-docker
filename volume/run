@@ -1,0 +1,82 @@
+#!/usr/bin/env python3
+import argparse
+import os
+from pathlib import Path
+import shutil
+import subprocess
+import sys
+from urllib.request import urlopen
+import venv
+
+from environment import bash_source
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(description='Runs ColorMotion.')
+    parser.add_argument('--skip-dependency-check', action='store_true', help='skip update of dependencies')
+    parser.add_argument('command', choices=['train'], help='step to run')
+    return parser.parse_args()
+
+
+def pull_repository(repository, directory=None):
+    if not directory:
+        directory = repository.rsplit('/', 1)[-1]
+    directory = Path(directory)
+    print('Getting {}'.format(repository))
+    if directory.exists():
+        subprocess.check_call(['git', 'pull', '--recurse-submodules'], cwd=directory)
+    else:
+        subprocess.check_call(['git', 'clone', '--recurse-submodules', '-j8', repository, str(directory)])
+
+
+def pull_dependencies(path):
+    dependencies = ['ColorMotion', 'Dataset']
+    for dependency in dependencies:
+        pull_repository('https://github.com/ColorMotion/{}'.format(dependency), path / dependency)
+
+
+def activate_venv(path):
+    bash_source(path / 'bin/activate')
+
+
+def create_venv(path):
+    venv.create(path, system_site_packages=True, with_pip=False)
+    activate_venv(path)
+    # See https://github.com/ContinuumIO/anaconda-issues/issues/6917:
+    # pip has to be installed separately when using anaconda
+    with urlopen('https://bootstrap.pypa.io/get-pip.py') as response:
+        payload = response.read()
+    print('Installing pip')
+    subprocess.run(['python', '-'], input=payload, check=True)
+
+
+def pip(args):
+    subprocess.check_call(['python', '-m', 'pip', *args])
+
+
+def pip_install(path):
+    if path.is_dir():
+        pip(['install', '-e', str(path)])
+    elif path.name == 'requirements.txt':
+        pip(['install', '-Ir', str(path)])
+    else:
+        raise RuntimeError("Can't pip install {}".format(path))
+
+
+def main(args):
+    volume = Path('/volume')
+    colormotion = volume / 'dependencies/ColorMotion'
+    if not args.skip_dependency_check:
+        pull_dependencies(volume / 'dependencies')
+        create_venv(volume / 'venv')
+        pip_install(colormotion / 'requirements.txt')
+        pip_install(colormotion)
+    else:
+        activate_venv(volume / 'venv')
+    if args.command == 'train':
+        command = [str(colormotion / 'scripts/train.py')]
+        os.execvp(command[0], command)
+
+if __name__ == '__main__':
+    assert sys.version_info.major == 3 and sys.version_info.minor >= 6, 'Use python3 >= 3.6'
+    main(parse_args())
