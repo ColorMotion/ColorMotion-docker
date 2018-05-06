@@ -36,6 +36,7 @@ RUN useradd -m -s /bin/bash -N -u $NB_UID $NB_USER && \
 USER $NB_USER
 
 ARG python_version=3.6
+ARG keras_version=2.1.6
 
 RUN conda install -y python=${python_version} && \
     pip install --upgrade pip && \
@@ -58,7 +59,7 @@ RUN conda install -y python=${python_version} && \
       six \
       theano && \
     git clone git://github.com/keras-team/keras.git /src && pip install -e /src[tests] && \
-    pip install git+git://github.com/keras-team/keras.git && \
+    pip install git+git://github.com/keras-team/keras.git@${keras_version} && \
     conda clean -yt
 
 ADD theanorc /home/keras/.theanorc
