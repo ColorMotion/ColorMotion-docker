@@ -1,4 +1,4 @@
-#!/usr/bin/env python3.6
+#!/usr/bin/env python3
 import argparse
 import os
 from pathlib import Path
@@ -24,7 +24,7 @@ def pull_repository(repository, directory=None):
     directory = Path(directory)
     print('Getting {}'.format(repository))
     if directory.exists():
-        subprocess.check_call(['git', 'pull', '--recurse-submodules'], cwd=directory)
+        subprocess.check_call(['git', 'pull', '--recurse-submodules'], cwd=str(directory))
     else:
         subprocess.check_call(['git', 'clone', '--recurse-submodules', repository, str(directory)])
 
@@ -40,7 +40,7 @@ def activate_venv(path):
 
 
 def create_venv(path):
-    venv.create(path, system_site_packages=True)
+    venv.create(str(path), system_site_packages=True)
     activate_venv(path)
 
 
