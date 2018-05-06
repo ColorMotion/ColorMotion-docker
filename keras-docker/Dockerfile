@@ -36,9 +36,10 @@ USER $NB_USER
 
 ARG keras_version=2.1.6
 
-RUN pip install tensorflow-gpu==1.8.0 && \
-    pip install https://cntk.ai/PythonWheel/GPU/cntk-2.1-cp36-cp36m-linux_x86_64.whl && \
-    pip install git+git://github.com/keras-team/keras.git@${keras_version}
+RUN python${python_version} -m pip install \
+      tensorflow-gpu==1.8.0 \
+      https://cntk.ai/PythonWheel/GPU/cntk-2.1-cp36-cp36m-linux_x86_64.whl && \
+    python${python_version} -m pip install git+git://github.com/keras-team/keras.git@${keras_version}
 
 WORKDIR /src
 

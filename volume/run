@@ -40,14 +40,8 @@ def activate_venv(path):
 
 
 def create_venv(path):
-    venv.create(path, system_site_packages=True, with_pip=False)
+    venv.create(path, system_site_packages=True)
     activate_venv(path)
-    # See https://github.com/ContinuumIO/anaconda-issues/issues/6917:
-    # pip has to be installed separately when using anaconda
-    with urlopen('https://bootstrap.pypa.io/get-pip.py') as response:
-        payload = response.read()
-    print('Installing pip')
-    subprocess.run(['python', '-'], input=payload, check=True)
 
 
 def pip(args):
