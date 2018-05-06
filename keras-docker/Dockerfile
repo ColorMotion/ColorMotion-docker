@@ -19,6 +19,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN add-apt-repository ppa:deadsnakes/ppa
 ARG python_version=3.6
 RUN apt-get update && apt-get install -y --no-install-recommends \
+      python3-pip \
       python${python_version} \
       python${python_version}-venv && \
     rm -rf /var/lib/apt/lists/*
@@ -35,10 +36,7 @@ USER $NB_USER
 
 ARG keras_version=2.1.6
 
-RUN python${python_version} -m venv /venv && \
-    . /venv/bin/activate && \
-    pip install -U pip && \
-    pip install tensorflow-gpu==1.8.0 && \
+RUN pip install tensorflow-gpu==1.8.0 && \
     pip install https://cntk.ai/PythonWheel/GPU/cntk-2.1-cp36-cp36m-linux_x86_64.whl && \
     pip install git+git://github.com/keras-team/keras.git@${keras_version}
 
