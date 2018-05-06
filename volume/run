@@ -72,5 +72,5 @@ def main(args):
         os.execvp(command[0], command)
 
 if __name__ == '__main__':
-    assert sys.version_info.major == 3 and sys.version_info.minor >= 6, 'Use python3 >= 3.6'
+    assert sys.version_info.major == 3 and sys.version_info.minor >= 5, 'Use python3 >= 3.5'
     main(parse_args())
