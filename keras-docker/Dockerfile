@@ -63,6 +63,7 @@ RUN wget https://github.com/bazelbuild/bazel/releases/download/0.12.0/bazel-0.12
     CUDA_TOOLKIT_PATH=/usr/local/cuda \
     CUDNN_INSTALL_PATH=/usr/lib/x86_64-linux-gnu \
     GCC_HOST_COMPILER_PATH=$(which gcc) \
+    LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/cuda/lib64/stubs:/usr/local/cuda/extras/CUPTI/lib64 \
     PATH=$HOME/bin:$PATH \
     PYTHON_BIN_PATH=$(which python${python_version}) \
     TF_CUDA_CLANG=0 \
