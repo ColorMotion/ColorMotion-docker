@@ -22,10 +22,10 @@ RUN add-apt-repository ppa:deadsnakes/ppa
 ARG python_version=3.6
 RUN apt-get update && apt-get install -y --no-install-recommends \
       python3-dev \
-      python3-numpy \
       python3-pip \
       python3-wheel \
       python${python_version} \
+      python${python_version}-dev \
       python${python_version}-venv && \
     rm -rf /var/lib/apt/lists/*
 
@@ -43,6 +43,16 @@ RUN useradd -m -s /bin/bash -N -u $NB_UID $NB_USER && \
 #     apt-get install -y bazel && \
 #     rm -rf /var/lib/apt/lists/*
 
+USER $NB_USER
+WORKDIR /home/$NB_USER
+
+ARG keras_version=2.1.6
+
+RUN python${python_version} -m pip install --user -U pip && \
+    python${python_version} -m pip install --user numpy && \
+    python${python_version} -m pip install --user setuptools && \
+    python${python_version} -m pip install --user git+git://github.com/keras-team/keras.git@${keras_version}
+
 RUN wget https://github.com/bazelbuild/bazel/releases/download/0.12.0/bazel-0.12.0-installer-linux-x86_64.sh && \
     chmod +x bazel-0.12.0-installer-linux-x86_64.sh && \
     ./bazel-0.12.0-installer-linux-x86_64.sh --user && \
@@ -53,8 +63,8 @@ RUN wget https://github.com/bazelbuild/bazel/releases/download/0.12.0/bazel-0.12
     CUDA_TOOLKIT_PATH=/usr/local/cuda \
     CUDNN_INSTALL_PATH=/usr/lib/x86_64-linux-gnu \
     GCC_HOST_COMPILER_PATH=$(which gcc) \
+    PATH=$HOME/bin:$PATH \
     PYTHON_BIN_PATH=$(which python${python_version}) \
-    PYTHON_LIB_PATH="$($PYTHON_BIN_PATH -c 'import site; print(site.getsitepackages()[0])')" \
     TF_CUDA_CLANG=0 \
     TF_CUDA_COMPUTE_CAPABILITIES=6.1 \
     TF_CUDA_VERSION=9.1 \
@@ -76,19 +86,14 @@ RUN wget https://github.com/bazelbuild/bazel/releases/download/0.12.0/bazel-0.12
     TF_NEED_TENSORRT=0 \
     TF_NEED_VERBS=0 \
     TF_SET_ANDROID_WORKSPACE=0 && \
+    export PYTHON_LIB_PATH="$($PYTHON_BIN_PATH -c 'import site; print(site.getsitepackages()[0])')" && \
+    ln -s /usr/bin/python3.6 ~/bin/python && \
     ./configure && \
-    ~/bin/bazel build --config=opt --config=cuda --local_resources 16000,8.0,1.0 //tensorflow/tools/pip_package:build_pip_package && \
-    python${python_version} bazel-bin/tensorflow/tools/pip_package/build_pip_package /tmp/tensorflow_whl && \
-    sudo pip install /tmp/tensorflow_whl/tensorflow-1.8.0-py3-none-any.whl && \
+    ~/bin/bazel build --config=opt --config=cuda --local_resources 20000,8.0,1.0 //tensorflow/tools/pip_package:build_pip_package && \
+    bazel-bin/tensorflow/tools/pip_package/build_pip_package /tmp/tensorflow_whl && \
+    sudo pip install --user /tmp/tensorflow_whl/tensorflow-1.8.0-py3-none-any.whl && \
     cd .. && \
     rm -rf tensorflow /tmp/tensorflow_whl ~/.bazel* ~/bin ~/.cache
-
-USER $NB_USER
-
-ARG keras_version=2.1.6
-
-RUN python${python_version} -m pip install --user setuptools && \
-    python${python_version} -m pip install --user git+git://github.com/keras-team/keras.git@${keras_version}
 
 WORKDIR /src
 
