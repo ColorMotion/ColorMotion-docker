@@ -3,25 +3,18 @@ ARG cudnn_version=7
 FROM nvidia/cuda:${cuda_version}-cudnn${cudnn_version}-devel
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-      g++ \
       git \
       graphviz \
       libgl1-mesa-glx \
       libhdf5-dev \
       openmpi-bin \
-      pkg-config \
-      software-properties-common \
-      unzip \
-      wget \
-      zip \
-      zlib1g-dev && \
+      software-properties-common && \
     rm -rf /var/lib/apt/lists/*
 
 # Recent Python version
 RUN add-apt-repository ppa:deadsnakes/ppa
 ARG python_version=3.6
 RUN apt-get update && apt-get install -y --no-install-recommends \
-      python3-dev \
       python3-pip \
       python3-wheel \
       python${python_version} \
@@ -51,50 +44,8 @@ ARG keras_version=2.1.6
 RUN python${python_version} -m pip install --user -U pip && \
     python${python_version} -m pip install --user numpy && \
     python${python_version} -m pip install --user setuptools && \
+    python${python_version} -m pip install --user tensorflow==1.5.0 && \
     python${python_version} -m pip install --user git+git://github.com/keras-team/keras.git@${keras_version}
-
-RUN wget https://github.com/bazelbuild/bazel/releases/download/0.12.0/bazel-0.12.0-installer-linux-x86_64.sh && \
-    chmod +x bazel-0.12.0-installer-linux-x86_64.sh && \
-    ./bazel-0.12.0-installer-linux-x86_64.sh --user && \
-    git clone https://github.com/tensorflow/tensorflow && \
-    cd tensorflow && \
-    git checkout r1.8 && \
-    export CC_OPT_FLAGS="-march=native" \
-    CUDA_TOOLKIT_PATH=/usr/local/cuda \
-    CUDNN_INSTALL_PATH=/usr/lib/x86_64-linux-gnu \
-    GCC_HOST_COMPILER_PATH=$(which gcc) \
-    LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/cuda/lib64/stubs:/usr/local/cuda/extras/CUPTI/lib64 \
-    PATH=$HOME/bin:$PATH \
-    PYTHON_BIN_PATH=$(which python${python_version}) \
-    TF_CUDA_CLANG=0 \
-    TF_CUDA_COMPUTE_CAPABILITIES=6.1 \
-    TF_CUDA_VERSION=9.1 \
-    TF_CUDNN_VERSION=7.1.2 \
-    TF_DOWNLOAD_MKL=0 \
-    TF_ENABLE_XLA=0 \
-    TF_NCCL_VERSION=1.3 \
-    TF_NEED_CUDA=1 \
-    TF_NEED_GCP=0 \
-    TF_NEED_GDR=0 \
-    TF_NEED_HDFS=0 \
-    TF_NEED_JEMALLOC=1 \
-    TF_NEED_KAFKA=0 \
-    TF_NEED_MKL=0 \
-    TF_NEED_MPI=0 \
-    TF_NEED_OPENCL_SYCL=0 \
-    TF_NEED_OPENCL=0 \
-    TF_NEED_S3=0 \
-    TF_NEED_TENSORRT=0 \
-    TF_NEED_VERBS=0 \
-    TF_SET_ANDROID_WORKSPACE=0 && \
-    export PYTHON_LIB_PATH="$($PYTHON_BIN_PATH -c 'import site; print(site.getsitepackages()[0])')" && \
-    ln -s /usr/bin/python3.6 ~/bin/python && \
-    ./configure && \
-    ~/bin/bazel build --config=opt --config=cuda --local_resources 20000,8.0,1.0 //tensorflow/tools/pip_package:build_pip_package && \
-    bazel-bin/tensorflow/tools/pip_package/build_pip_package /tmp/tensorflow_whl && \
-    sudo pip install --user /tmp/tensorflow_whl/tensorflow-1.8.0-py3-none-any.whl && \
-    cd .. && \
-    rm -rf tensorflow /tmp/tensorflow_whl ~/.bazel* ~/bin ~/.cache
 
 WORKDIR /src
 
