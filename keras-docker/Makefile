@@ -8,7 +8,7 @@ DOCKER=GPU=$(GPU) nvidia-docker
 BACKEND=tensorflow
 PYTHON_VERSION?=3.6
 KERAS_VERSION?=2.1.6
-CUDA_VERSION?=9.0
+CUDA_VERSION?=9.1
 CUDNN_VERSION?=7
 TAG?=tiagoshibata/keras:latest
 TEST=tests/

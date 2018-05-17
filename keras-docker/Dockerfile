@@ -24,7 +24,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       python${python_version}-venv && \
     rm -rf /var/lib/apt/lists/*
 
-# Install Python packages and keras
 ENV NB_USER keras
 ENV NB_UID 1000
 
@@ -43,16 +42,16 @@ RUN python${python_version} -m pip install --user -U pip && \
 RUN git clone https://github.com/tensorflow/tensorflow && \
     cd tensorflow && \
     git checkout r1.8 && \
-    CC_OPT_FLAGS="-march=native" \
+    export CC_OPT_FLAGS="-march=native" \
     CUDA_TOOLKIT_PATH=/usr/local/cuda \
     CUDNN_INSTALL_PATH=/usr/lib/x86_64-linux-gnu \
     GCC_HOST_COMPILER_PATH=$(which gcc) \
-    PYTHON_BIN_PATH=$(which python3.5) \
+    PYTHON_BIN_PATH=$(which python${python_version}) \
     PYTHON_LIB_PATH="$($PYTHON_BIN_PATH -c 'import site; print(site.getsitepackages()[0])')" \
     TF_CUDA_CLANG=0 \
     TF_CUDA_COMPUTE_CAPABILITIES=6.1 \
     TF_CUDA_VERSION=9.1 \
-    TF_CUDNN_VERSION=7.0 \
+    TF_CUDNN_VERSION=7.1.2 \
     TF_DOWNLOAD_MKL=0 \
     TF_ENABLE_XLA=0 \
     TF_NCCL_VERSION=1.3 \
@@ -69,8 +68,14 @@ RUN git clone https://github.com/tensorflow/tensorflow && \
     TF_NEED_S3=0 \
     TF_NEED_TENSORRT=0 \
     TF_NEED_VERBS=0 \
-    TF_SET_ANDROID_WORKSPACE=0 \
-    ./configure
+    TF_SET_ANDROID_WORKSPACE=0 && \
+    ./configure && \
+    ~/bin/bazel build --config=opt --config=cuda --local_resources 16000,8.0,1.0 //tensorflow/tools/pip_package:build_pip_package && \
+    python${python_version} bazel-bin/tensorflow/tools/pip_package/build_pip_package /tmp/tensorflow_whl && \
+    sudo pip install /tmp/tensorflow_whl/tensorflow-1.8.0-py3-none-any.whl && \
+    cd .. && \
+    rm -rf tensorflow /tmp/tensorflow_whl ~/.bazel* ~/bin ~/.cache
+
 
 WORKDIR /src
 
