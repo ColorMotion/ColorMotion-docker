@@ -2,14 +2,19 @@ ARG cuda_version=9.1
 ARG cudnn_version=7
 FROM nvidia/cuda:${cuda_version}-cudnn${cudnn_version}-devel
 
-# Install system packages
 RUN apt-get update && apt-get install -y --no-install-recommends \
+      g++ \
       git \
       graphviz \
       libgl1-mesa-glx \
       libhdf5-dev \
       openmpi-bin \
-      software-properties-common && \
+      pkg-config \
+      software-properties-common \
+      unzip \
+      wget \
+      zip \
+      zlib1g-dev && \
     rm -rf /var/lib/apt/lists/*
 
 # Recent Python version
@@ -31,15 +36,17 @@ RUN useradd -m -s /bin/bash -N -u $NB_UID $NB_USER && \
     mkdir -p /venv && \
     chown $NB_USER /venv
 
-USER $NB_USER
+# TensorFlow doesn't currently build with Bazel 0.13.0
+# RUN echo "deb [arch=amd64] http://storage.googleapis.com/bazel-apt stable jdk1.8" > /etc/apt/sources.list.d/bazel.list && \
+#     wget -qO- https://bazel.build/bazel-release.pub.gpg | apt-key add - && \
+#     apt-get update && \
+#     apt-get install -y bazel && \
+#     rm -rf /var/lib/apt/lists/*
 
-ARG keras_version=2.1.6
-
-RUN python${python_version} -m pip install --user -U pip && \
-    python${python_version} -m pip install --user setuptools && \
-    python${python_version} -m pip install --user git+git://github.com/keras-team/keras.git@${keras_version}
-
-RUN git clone https://github.com/tensorflow/tensorflow && \
+RUN wget https://github.com/bazelbuild/bazel/releases/download/0.12.0/bazel-0.12.0-installer-linux-x86_64.sh && \
+    chmod +x bazel-0.12.0-installer-linux-x86_64.sh && \
+    ./bazel-0.12.0-installer-linux-x86_64.sh --user && \
+    git clone https://github.com/tensorflow/tensorflow && \
     cd tensorflow && \
     git checkout r1.8 && \
     export CC_OPT_FLAGS="-march=native" \
@@ -76,6 +83,12 @@ RUN git clone https://github.com/tensorflow/tensorflow && \
     cd .. && \
     rm -rf tensorflow /tmp/tensorflow_whl ~/.bazel* ~/bin ~/.cache
 
+USER $NB_USER
+
+ARG keras_version=2.1.6
+
+RUN python${python_version} -m pip install --user setuptools && \
+    python${python_version} -m pip install --user git+git://github.com/keras-team/keras.git@${keras_version}
 
 WORKDIR /src
 
