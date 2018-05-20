@@ -1,4 +1,4 @@
-ARG cuda_version=9.1
+ARG cuda_version=9.0
 ARG cudnn_version=7
 FROM nvidia/cuda:${cuda_version}-cudnn${cudnn_version}-devel
 
@@ -44,7 +44,7 @@ ARG keras_version=2.1.6
 
 RUN python${python_version} -m pip install --user -U pip && \
     python${python_version} -m pip install --user numpy setuptools six && \
-    python${python_version} -m pip install --user tensorflow==1.5.0 && \
+    python${python_version} -m pip install --user tensorflow-gpu==1.5.0 && \
     python${python_version} -m pip install --user git+git://github.com/keras-team/keras.git@${keras_version}
 
 WORKDIR /src
