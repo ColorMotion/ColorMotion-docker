@@ -21,7 +21,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       python${python_version}-dev \
       python${python_version}-venv && \
     rm -rf /var/lib/apt/lists/*
-RUN ln -sf /usr/bin/python3{.6,}
+RUN ln -sf /usr/bin/python${python_version} /usr/bin/python3
 
 ENV NB_USER keras
 ENV NB_UID 1000
@@ -43,7 +43,7 @@ WORKDIR /home/$NB_USER
 ARG keras_version=2.1.6
 
 RUN python${python_version} -m pip install --user -U pip && \
-    python${python_version} -m pip install --user numpy setuptools && \
+    python${python_version} -m pip install --user numpy setuptools six && \
     python${python_version} -m pip install --user tensorflow==1.5.0 && \
     python${python_version} -m pip install --user git+git://github.com/keras-team/keras.git@${keras_version}
 

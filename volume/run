@@ -45,7 +45,7 @@ def create_venv(path):
 
 
 def pip(args):
-    subprocess.check_call(['python', '-m', 'pip', *args])
+    subprocess.check_call(['python3', '-m', 'pip', *args])
 
 
 def pip_install(path):
@@ -68,7 +68,7 @@ def main(args):
     else:
         activate_venv(volume / 'venv')
     if args.command == 'train':
-        command = ['python', str(colormotion / 'scripts/train.py')]
+        command = ['python', str(colormotion / 'scripts/train.py'), '/volume/dataset']
         os.execvp(command[0], command)
 
 if __name__ == '__main__':
