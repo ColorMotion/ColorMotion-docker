@@ -2,6 +2,8 @@ FROM base/archlinux
 
 RUN pacman -Syu --noconfirm \
     git \
+    libsm \
+    libxrender \
     python-pip \
     python-tensorflow-cuda \
     tensorflow-cuda \
