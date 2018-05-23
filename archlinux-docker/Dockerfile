@@ -2,6 +2,7 @@ FROM base/archlinux
 
 RUN pacman -Syu --noconfirm \
     git \
+    hdf5 \
     libsm \
     libxrender \
     python-pip \
